@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAPORAN CASHFLOW HARIAN MEREMPAH</title>
+    <style>
+      body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 15px; font-size: 13px; background-color: #f0f2f5; color: #333; max-width: 600px; margin: 0 auto; }
+      .header-title { text-align: center; color: #2c3e50; font-weight: 800; font-size: 18px; margin-bottom: 20px; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; text-transform: uppercase; }
+      .section { background: white; padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+      .section-title { font-weight: bold; background: #2c3e50; color: white; padding: 8px 12px; margin: -15px -15px 12px -15px; border-radius: 8px 8px 0 0; font-size: 12px; }
+      .row { display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+      .col { flex: 1; min-width: 120px; }
+      label { display: block; margin-top: 5px; font-weight: bold; color: #555; font-size: 10px; text-transform: uppercase; }
+      input, select { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; background: #fff; }
+      input:focus, select:focus { border-color: #80bdff; outline: none; }
+      input[readonly] { background-color: #e9ecef; font-weight: bold; color: #495057; border-style: dashed; }
+      .calc-result { background: #fff9c4 !important; color: #d32f2f !important; }
+      .sub-title { font-weight: bold; color: #d32f2f; font-size: 11px; margin-top: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 4px;}
+      button { width: 100%; padding: 14px; background-color: #0d6efd; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; font-weight: bold; font-size: 14px; transition: 0.3s; }
+      button:hover { background-color: #0b5ed7; }
+      button:disabled { background-color: #6c757d; cursor: not-allowed; }
+      .success-msg { color: #0f5132; background: #d1e7dd; padding: 15px; border-radius: 5px; text-align: center; margin-top: 15px; display: none; border: 1px solid #badbcc; font-weight: bold;}
+    </style>
+  </head>
+  <body>
+
+    <div class="header-title">LAPORAN CASHFLOW HARIAN MEREMPAH</div>
+
+    <div class="section">
+      <div class="section-title">ADMINISTRASI & A. SALDO AWAL</div>
+      <div class="row">
+        <div class="col"><label>TANGGAL ISI</label><input type="date" id="tgl"></div>
+        <div class="col"><label>NAMA PIC</label><input type="text" id="pic"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>A1. KEMARIN</label><input type="number" id="a1" oninput="calc()"></div>
+        <div class="col"><label>A2. MODAL</label><input type="number" id="a2" oninput="calc()"></div>
+        <div class="col"><label>A3. INJECT</label><input type="number" id="a3" oninput="calc()"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">B. PENDAPATAN & C. ONLINE</div>
+      <div class="row">
+        <div class="col"><label>B1. POS SYSTEM</label><input type="number" id="b1" oninput="calc()"></div>
+        <div class="col"><label>B2. QRIS LIVIN</label><input type="number" id="b2" oninput="calc()"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>C1. SHOPEE</label><input type="number" id="c1" oninput="calc()"></div>
+        <div class="col"><label>C2. GRAB</label><input type="number" id="c2" oninput="calc()"></div>
+        <div class="col"><label>C3. GOFOOD</label><input type="number" id="c3" oninput="calc()"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>TOTAL TUNAI (A+B3)</label><input type="number" id="total_tunai_final" class="calc-result" readonly></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">E. PENGELUARAN & KASBON</div>
+      <div class="row">
+        <div class="col"><label>E1. BELANJA UMUM</label><input type="number" id="e1" oninput="calc()"></div>
+        <div class="col"><label>E2. LAINNYA</label><input type="number" id="e2" oninput="calc()"></div>
+      </div>
+      <label>E3. KET. BELANJA/LAINNYA</label><input type="text" id="e3" placeholder="Misal: Beli es batu, parkir">
+      
+      <div class="sub-title">RINCIAN KASBON TIM</div>
+      <script>
+        const tim =["- Pilih Nama -", "Nathan", "Friz", "Ardi", "Wanto", "Aziz", "Danu"];
+        for(let i=1; i<=6; i++) {
+          document.write(`
+          <div class="row">
+            <div class="col">
+              <select id="k_n${i}">
+                ${tim.map(nama => `<option value="${nama=='- Pilih Nama -' ? '' : nama}">${nama}</option>`).join('')}
+              </select>
+            </div>
+            <div class="col"><input type="number" id="k_v${i}" placeholder="Rp Kasbon" oninput="calc()"></div>
+          </div>`);
+        }
+      </script>
+      <label>TOTAL PENGELUARAN (E1+E2+KASBON)</label><input type="number" id="total_e" class="calc-result" readonly>
+    </div>
+
+    <div class="section">
+      <div class="section-title">F. PIUTANG CUSTOMER (BELUM BAYAR)</div>
+      <div class="row">
+        <div class="col"><label>F1. NAMA CUSTOMER</label><input type="text" id="f1"></div>
+        <div class="col"><label>F2. TOTAL PIUTANG</label><input type="number" id="f2"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title" style="background:#d32f2f">G. CROSS CHECK & H. SETORAN</div>
+      <div class="row">
+        <div class="col"><label>G2. UANG FISIK (HITUNG)</label><input type="number" id="g2" oninput="calc()"></div>
+        <div class="col"><label>G3. SELISIH (HARUS 0)</label><input type="number" id="g3" class="calc-result" readonly></div>
+      </div>
+      <label>G4. KET. SELISIH</label><input type="text" id="g4" placeholder="Jelaskan jika ada selisih">
+      <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+      <div class="row">
+        <div class="col"><label>H1. MODAL BESOK</label><input type="number" id="h1" oninput="calc()"></div>
+        <div class="col"><label>H2. SETOR HO</label><input type="number" id="h2" oninput="calc()"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>H3. SISA KAS</label><input type="number" id="h3" class="calc-result" readonly></div>
+      </div>
+    </div>
+
+    <button id="btnSubmit" onclick="sendData()">KIRIM DATA KE DATABASE</button>
+    <div id="msg" class="success-msg">✅ Data Berhasil Disimpan!</div>
+
+    <script>
+      // ⚠️ GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE SCRIPT ANDA
+      const GOOGLE_WEB_APP_URL = "URL_WEB_APP_ANDA_TEMPEL_DISINI";
+
+      function n(id) { return parseFloat(document.getElementById(id).value) || 0; }
+      function v(id, val) { document.getElementById(id).value = val; }
+
+      function calc() {
+        let totalA = n('a1') + n('a2') + n('a3');
+        let totalTunai = totalA + (n('b1') - n('b2'));
+        v('total_tunai_final', totalTunai);
+        
+        let totalKasbon = n('k_v1') + n('k_v2') + n('k_v3') + n('k_v4') + n('k_v5') + n('k_v6');
+        let totalE = n('e1') + n('e2') + totalKasbon;
+        v('total_e', totalE);
+        
+        let uangSeharusnya = totalTunai - totalE;
+        v('g3', uangSeharusnya - n('g2'));
+        v('h3', n('g2') - n('h1') - n('h2'));
+      }
+
+      function sendData() {
+        if(GOOGLE_WEB_APP_URL === "URL_WEB_APP_ANDA_TEMPEL_DISINI") {
+            alert("Error: Anda belum menempelkan URL Web App Google Script di dalam kode HTML!");
+            return;
+        }
+
+        const btn = document.getElementById('btnSubmit');
+        btn.innerText = "⏳ Menyimpan data... Mohon Tunggu";
+        btn.disabled = true;
+
+        const data = {
+          tgl: document.getElementById('tgl').value, pic: document.getElementById('pic').value,
+          a1: n('a1'), a2: n('a2'), a3: n('a3'), total_a: n('a1')+n('a2')+n('a3'),
+          b1: n('b1'), b2: n('b2'), b3: n('b1')-n('b2'),
+          c1: n('c1'), c2: n('c2'), c3: n('c3'), total_c: n('c1')+n('c2')+n('c3'),
+          total_tunai_final: n('a1')+n('a2')+n('a3') + (n('b1')-n('b2')), 
+          total_non_tunai_final: n('b2') + n('c1')+n('c2')+n('c3'),
+          e1: n('e1'), e2: n('e2'), e3: document.getElementById('e3').value, 
+          k_n1: document.getElementById('k_n1').value, k_v1: n('k_v1'),
+          k_n2: document.getElementById('k_n2').value, k_v2: n('k_v2'),
+          k_n3: document.getElementById('k_n3').value, k_v3: n('k_v3'),
+          k_n4: document.getElementById('k_n4').value, k_v4: n('k_v4'),
+          k_n5: document.getElementById('k_n5').value, k_v5: n('k_v5'),
+          k_n6: document.getElementById('k_n6').value, k_v6: n('k_v6'),
+          total_e: n('e1') + n('e2') + n('k_v1') + n('k_v2') + n('k_v3') + n('k_v4') + n('k_v5') + n('k_v6'),
+          f1: document.getElementById('f1').value, f2: n('f2'),
+          g1: (n('a1')+n('a2')+n('a3')+(n('b1')-n('b2'))) - (n('e1')+n('e2')+n('k_v1')+n('k_v2')+n('k_v3')+n('k_v4')+n('k_v5')+n('k_v6')),
+          g2: n('g2'), g3: n('g3'), g4: document.getElementById('g4').value,
+          h1: n('h1'), h2: n('h2'), h3: n('h3')
+        };
+
+        fetch(GOOGLE_WEB_APP_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if(result.status === 'sukses') {
+                document.getElementById('msg').style.display = 'block';
+                setTimeout(() => { 
+                    window.location.reload(); // Refresh halaman jika sukses
+                }, 2500);
+            } else {
+                alert("Gagal menyimpan: " + result.pesan);
+            }
+        })
+        .catch(error => {
+            alert("Gagal menghubungi server Google. Pastikan internet Anda aktif.");
+            console.error(error);
+        })
+        .finally(() => {
+            btn.innerText = "KIRIM DATA KE DATABASE";
+            btn.disabled = false;
+        });
+      }
+    </script>
+  </body>
+</html>
