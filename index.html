@@ -20,7 +20,10 @@
       
       /* --- STYLE FORM --- */
       .header-title { text-align: center; color: #2c3e50; font-weight: 800; font-size: 18px; margin-bottom: 20px; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; text-transform: uppercase; }
-      .section { background: white; padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+      
+      /* PERBAIKAN: Menambahkan page-break-inside avoid agar tidak terpotong di tengah PDF */
+      .section { background: white; padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); page-break-inside: avoid; break-inside: avoid; }
+      
       .section-title { font-weight: bold; background: #2c3e50; color: white; padding: 8px 12px; margin: -15px -15px 12px -15px; border-radius: 8px 8px 0 0; font-size: 12px; }
       .row { display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
       .col { flex: 1; min-width: 120px; }
@@ -31,12 +34,10 @@
       .calc-result { background: #fff9c4 !important; color: #d32f2f !important; }
       .sub-title { font-weight: bold; color: #d32f2f; font-size: 11px; margin-top: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 4px;}
       
-      .btn-container { display: flex; gap: 10px; margin-top: 20px; }
-      button.action-btn { width: 100%; padding: 14px; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.3s; }
-      #btnPdf { background-color: #e67e22; }
-      #btnPdf:hover { background-color: #d35400; }
-      #btnSubmit { background-color: #0d6efd; }
-      #btnSubmit:hover { background-color: #0b5ed7; }
+      /* --- STYLE TOMBOL GABUNGAN --- */
+      .btn-container { display: flex; margin-top: 20px; margin-bottom: 30px; }
+      button.action-btn { width: 100%; padding: 16px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; background-color: #198754; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s; }
+      button.action-btn:hover { background-color: #157347; }
       button:disabled { background-color: #6c757d !important; cursor: not-allowed; }
       .success-msg { color: #0f5132; background: #d1e7dd; padding: 15px; border-radius: 5px; text-align: center; margin-top: 15px; display: none; border: 1px solid #badbcc; font-weight: bold;}
     </style>
@@ -128,78 +129,45 @@
         </div>
         <label>G4. KET. SELISIH</label><input type="text" id="g4" placeholder="Jelaskan jika ada selisih">
         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+        
+        <!-- BAGIAN H YANG BARU: 3 ISIAN SETORAN -->
         <div class="row">
-          <div class="col"><label>H1. MODAL BESOK</label><input type="number" id="h1" oninput="calc()"></div>
-          <div class="col"><label>H2. SETOR HO</label><input type="number" id="h2" oninput="calc()"></div>
+          <div class="col"><label>H1. SETOR MODAL KASIR UNTUK BESOK</label><input type="number" id="h1" oninput="calc()"></div>
+          <div class="col"><label>H2. SETOR CASHBOX KAS BESAR</label><input type="number" id="h2" oninput="calc()"></div>
         </div>
         <div class="row">
-          <div class="col"><label>H3. SISA KAS</label><input type="number" id="h3" class="calc-result" readonly></div>
+          <div class="col"><label>H3. SETOR HEAD OFFICE (HO)</label><input type="number" id="h3" oninput="calc()"></div>
         </div>
       </div>
     </div> <!-- END AREA CETAK -->
 
-    <!-- TOMBOL AKSI -->
+    <!-- TOMBOL AKSI 2 FUNGSI -->
     <div id="area-tombol" class="btn-container">
-      <button id="btnPdf" class="action-btn" onclick="exportKePDF()">📄 EXPORT PDF</button>
-      <button id="btnSubmit" class="action-btn" onclick="sendData()">💾 KIRIM KE DATABASE</button>
+      <button id="btnProses" class="action-btn" onclick="prosesGabungan()">📥 DOWNLOAD PDF & SIMPAN KE DATABASE</button>
     </div>
     
-    <div id="msg" class="success-msg">✅ Data Berhasil Disimpan!</div>
+    <div id="msg" class="success-msg">✅ PDF Terunduh & Data Berhasil Disimpan!</div>
 
     <script>
-      // ⚠️ GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE SCRIPT ANDA
+      // URL GOOGLE WEB APP 
       const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhLuZULu_q7JZVvA3mUiI2g2exMAUuycGraKXJ-tRgINvRCRXf0wZYSCv0IurKYlrD/exec";
 
       // --- LOGIKA PASSWORD ---
       function cekPassword() {
         const inputPwd = document.getElementById('inputPassword').value;
         if(inputPwd === 'KonsistenSop') {
-          // Jika benar, sembunyikan layar hitam
           document.getElementById('auth-overlay').style.display = 'none';
         } else {
           alert('❌ Password Salah! Silakan coba lagi.');
         }
       }
 
-      // Supaya bisa tekan "Enter" saat ketik password
       document.getElementById("inputPassword").addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
           event.preventDefault();
           cekPassword();
         }
       });
-
-      // --- LOGIKA EXPORT PDF ---
-      function exportKePDF() {
-        // Ambil elemen area cetak
-        const elemen = document.getElementById('area-cetak');
-        
-        // Ambil Nama PIC dan Tanggal untuk Nama File
-        let namaPic = document.getElementById('pic').value.trim() || 'TanpaNama';
-        let rawTgl = document.getElementById('tgl').value;
-        let tglFormat = 'TanpaTanggal';
-        
-        // Ubah format tanggal YYYY-MM-DD menjadi DD-MM-YY
-        if(rawTgl) {
-          const parts = rawTgl.split('-'); // [0]=YYYY, [1]=MM, [2]=DD
-          const yy = parts[0].substring(2, 4);
-          tglFormat = `${parts[2]}-${parts[1]}-${yy}`;
-        }
-        
-        const namaFilePDF = `${namaPic}_${tglFormat}.pdf`;
-
-        // Pengaturan render PDF
-        const opt = {
-          margin:[10, 10, 10, 10], // Margin atas, kiri, bawah, kanan
-          filename:     namaFilePDF,
-          image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2, useCORS: true }, // scale 2 agar teks tajam/tidak buram
-          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        // Mulai download (Tombol akan disembunyikan otomatis karena kita hanya render 'area-cetak')
-        html2pdf().set(opt).from(elemen).save();
-      }
 
       // --- LOGIKA KALKULASI MATEMATIKA ---
       function n(id) { return parseFloat(document.getElementById(id).value) || 0; }
@@ -216,20 +184,48 @@
         
         let uangSeharusnya = totalTunai - totalE;
         v('g3', uangSeharusnya - n('g2'));
-        v('h3', n('g2') - n('h1') - n('h2'));
       }
 
-      // --- LOGIKA KIRIM DATA KE GOOGLE SHEETS ---
-      function sendData() {
-        if(GOOGLE_WEB_APP_URL === "URL_WEB_APP_ANDA_TEMPEL_DISINI") {
-            alert("Error: Anda belum menempelkan URL Web App Google Script di dalam kode HTML!");
-            return;
-        }
-
-        const btn = document.getElementById('btnSubmit');
-        btn.innerText = "⏳ Menyimpan...";
+      // --- LOGIKA 1 TOMBOL 2 FUNGSI (PDF LALU KIRIM DATA) ---
+      function prosesGabungan() {
+        const btn = document.getElementById('btnProses');
+        btn.innerText = "⏳ Sedang Memproses PDF & Menyimpan Data...";
         btn.disabled = true;
 
+        // TAHAP 1: EKSPOR PDF
+        const elemen = document.getElementById('area-cetak');
+        let namaPic = document.getElementById('pic').value.trim() || 'TanpaNama';
+        let rawTgl = document.getElementById('tgl').value;
+        let tglFormat = 'TanpaTanggal';
+        
+        // Format YYYY-MM-DD jadi DD-MM-YY
+        if(rawTgl) {
+          const parts = rawTgl.split('-'); 
+          const yy = parts[0].substring(2, 4);
+          tglFormat = `${parts[2]}-${parts[1]}-${yy}`;
+        }
+        
+        const namaFilePDF = `${namaPic}_${tglFormat}.pdf`;
+
+        // PERBAIKAN SETTING PDF:
+        // scrollY: 0 memastikan halaman dirender dari koordinat teratas (tidak blank)
+        // margin diperkecil sedikit agar muat dalam 2 halaman rapi
+        const opt = {
+          margin:[5, 5, 5, 5], 
+          filename:     namaFilePDF,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Mulai Download PDF, jika sukses Lanjut Tahap 2
+        html2pdf().set(opt).from(elemen).save().then(() => {
+            // TAHAP 2: KIRIM KE GOOGLE SHEETS
+            kirimData(btn);
+        });
+      }
+
+      function kirimData(btn) {
         const data = {
           tgl: document.getElementById('tgl').value, pic: document.getElementById('pic').value,
           a1: n('a1'), a2: n('a2'), a3: n('a3'), total_a: n('a1')+n('a2')+n('a3'),
@@ -248,7 +244,7 @@
           f1: document.getElementById('f1').value, f2: n('f2'),
           g1: (n('a1')+n('a2')+n('a3')+(n('b1')-n('b2'))) - (n('e1')+n('e2')+n('k_v1')+n('k_v2')+n('k_v3')+n('k_v4')+n('k_v5')+n('k_v6')),
           g2: n('g2'), g3: n('g3'), g4: document.getElementById('g4').value,
-          h1: n('h1'), h2: n('h2'), h3: n('h3')
+          h1: n('h1'), h2: n('h2'), h3: document.getElementById('h3').value
         };
 
         fetch(GOOGLE_WEB_APP_URL, {
@@ -262,17 +258,17 @@
                 document.getElementById('msg').style.display = 'block';
                 setTimeout(() => { 
                     window.location.reload(); 
-                }, 2500);
+                }, 3000);
             } else {
-                alert("Gagal menyimpan: " + result.pesan);
+                alert("Gagal menyimpan ke Database: " + result.pesan);
             }
         })
         .catch(error => {
-            alert("Gagal menghubungi server Google. Pastikan internet Anda aktif.");
+            alert("Database Gagal: Pastikan internet aktif. (PDF tetap tersimpan di HP/Laptop Anda)");
             console.error(error);
         })
         .finally(() => {
-            btn.innerText = "💾 KIRIM KE DATABASE";
+            btn.innerText = "📥 DOWNLOAD PDF & SIMPAN KE DATABASE";
             btn.disabled = false;
         });
       }
